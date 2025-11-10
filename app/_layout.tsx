@@ -1,24 +1,32 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack } from "expo-router";
+import { HeroUINativeProvider } from "heroui-native";
+import { configureReanimatedLogger, ReanimatedLogLevel } from "react-native-reanimated";
+import "react-native-reanimated";
+import "../global.css";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+// Configurar o logger do Reanimated para reduzir warnings durante desenvolvimento
+// Isso resolve o warning sobre ler `value` durante o render
+if (__DEV__) {
+  configureReanimatedLogger({
+    strict: false, // Desabilita o strict mode que causa warnings
+    level: ReanimatedLogLevel.warn,
+  });
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  // TODO: Adicionar lógica de autenticação aqui
+  // Por enquanto, sempre mostra (protected)
+  const isAuthenticated = false; // Placeholder
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+    <HeroUINativeProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        {isAuthenticated ? (
+          <Stack.Screen name="(protected)" />
+        ) : (
+          <Stack.Screen name="(auth)" />
+        )}
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </HeroUINativeProvider>
   );
 }

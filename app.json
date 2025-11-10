@@ -21,7 +21,19 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.kduburko.appoficinas"
+      "package": "com.kduburko.appoficinas",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "app-oficinas"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "output": "static",
@@ -40,7 +52,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -50,7 +63,9 @@
       "router": {},
       "eas": {
         "projectId": "1dfc893c-a3c9-485b-b590-18ba3ebca4bb"
-      }
+      },
+      "supabaseUrl": "https://gubapyjusvnadstmkyst.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1YmFweWp1c3ZuYWRzdG1reXN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4MTAyODUsImV4cCI6MjA3ODM4NjI4NX0.1fVlJqLLlz_CwdwCcpEGmWYEaYIJDYt2CHRLGA9C_E8"
     },
     "owner": "kduburko",
     "updates": {
