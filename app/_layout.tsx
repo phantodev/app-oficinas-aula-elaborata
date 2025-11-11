@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import {
   configureReanimatedLogger,
@@ -23,16 +24,18 @@ export default function RootLayout() {
   const isAuthenticated = false; // Placeholder
 
   return (
-    <ReactQueryProvider>
-      <HeroUINativeProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          {isAuthenticated ? (
-            <Stack.Screen name="(protected)" />
-          ) : (
-            <Stack.Screen name="(auth)" />
-          )}
-        </Stack>
-      </HeroUINativeProvider>
-    </ReactQueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ReactQueryProvider>
+        <HeroUINativeProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            {isAuthenticated ? (
+              <Stack.Screen name="(protected)" />
+            ) : (
+              <Stack.Screen name="(auth)" />
+            )}
+          </Stack>
+        </HeroUINativeProvider>
+      </ReactQueryProvider>
+    </GestureHandlerRootView>
   );
 }
