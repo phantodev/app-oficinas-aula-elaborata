@@ -1,8 +1,12 @@
 import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";
-import { configureReanimatedLogger, ReanimatedLogLevel } from "react-native-reanimated";
 import "react-native-reanimated";
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from "react-native-reanimated";
 import "../global.css";
+import { ReactQueryProvider } from "../providers/ReactQueryProvider";
 
 // Configurar o logger do Reanimated para reduzir warnings durante desenvolvimento
 // Isso resolve o warning sobre ler `value` durante o render
@@ -19,14 +23,16 @@ export default function RootLayout() {
   const isAuthenticated = false; // Placeholder
 
   return (
-    <HeroUINativeProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <Stack.Screen name="(protected)" />
-        ) : (
-          <Stack.Screen name="(auth)" />
-        )}
-      </Stack>
-    </HeroUINativeProvider>
+    <ReactQueryProvider>
+      <HeroUINativeProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          {isAuthenticated ? (
+            <Stack.Screen name="(protected)" />
+          ) : (
+            <Stack.Screen name="(auth)" />
+          )}
+        </Stack>
+      </HeroUINativeProvider>
+    </ReactQueryProvider>
   );
 }
