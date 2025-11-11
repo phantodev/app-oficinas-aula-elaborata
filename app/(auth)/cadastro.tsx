@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Link, router } from "expo-router";
-import { Button, Dialog, TextField } from "heroui-native";
-import { useState } from "react";
+import { Link } from "expo-router";
+import { Button, TextField } from "heroui-native";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text, View } from "react-native";
+import Toast from "react-native-toast-message";
 import { z } from "zod";
 import { authService, SignUpData } from "../../services/auth.service";
 
@@ -30,13 +30,6 @@ const cadastroSchema = z
 type CadastroFormData = z.infer<typeof cadastroSchema>;
 
 export default function CadastroScreen() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // true para testar
-  const [dialogTitle, setDialogTitle] = useState("Teste");
-  const [dialogMessage, setDialogMessage] = useState(
-    "Este é um teste do Dialog"
-  );
-  const [isSuccess, setIsSuccess] = useState(true);
-
   const {
     control,
     handleSubmit,
@@ -60,41 +53,22 @@ export default function CadastroScreen() {
     },
     onSuccess: (result) => {
       if (result?.success) {
-        console.log("✅ onSuccess chamado com resultado:", result);
-        setDialogTitle("Sucesso!");
-        setDialogMessage(
-          "Cadastro realizado com sucesso! Verifique seu email para confirmar a conta."
-        );
-        setIsSuccess(true);
-        setIsDialogOpen(true);
-      } else {
-        setDialogTitle("Erro");
-        setDialogMessage(result.error || "Erro ao cadastrar usuário");
-        setIsSuccess(false);
-        setIsDialogOpen(true);
+        Toast.show({
+          type: "success",
+          text1: "Cadastro",
+          text2: "Cadastro realizado com sucesso",
+        });
       }
     },
     onError: (error: any) => {
       console.log("❌ onError chamado com erro:", error);
-      setDialogTitle("Erro");
-      setDialogMessage(
-        error?.message || "Ocorreu um erro inesperado ao cadastrar"
-      );
-      setIsSuccess(false);
-      setIsDialogOpen(true);
-    },
-    onSettled: (data, error) => {
-      console.log("🟡 onSettled chamado - data:", data, "error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Hello",
+        text2: "This is some something 👋",
+      });
     },
   });
-
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
-    if (isSuccess) {
-      reset(); // Limpa o formulário
-      router.replace("/(auth)/login"); // Redireciona para login
-    }
-  };
 
   const onSubmit = async (data: CadastroFormData) => {
     console.log("📝 onSubmit chamado com dados:", data);
@@ -242,11 +216,8 @@ export default function CadastroScreen() {
               className="w-full mt-6"
               isDisabled={signUpMutation.isPending}
               onPress={() => {
-                console.log("🔴 Botão pressionado!");
-                console.log("🔴 Erros do formulário:", errors);
                 handleSubmit(
                   (data) => {
-                    console.log("✅ handleSubmit - dados válidos:", data);
                     onSubmit(data);
                   },
                   (errors) => {
@@ -273,31 +244,6 @@ export default function CadastroScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* Dialog de Sucesso/Erro - Fora do ScrollView para renderização correta */}
-      <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content>
-            <Dialog.Close />
-            <View className="mb-5 gap-1.5">
-              <Dialog.Title>{dialogTitle}</Dialog.Title>
-              <Dialog.Description>{dialogMessage}</Dialog.Description>
-            </View>
-            <View className="flex-row justify-end">
-              <Dialog.Close asChild>
-                <Button
-                  variant={isSuccess ? "primary" : "destructive"}
-                  size="sm"
-                  onPress={handleDialogClose}
-                >
-                  OK
-                </Button>
-              </Dialog.Close>
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
     </>
   );
 }

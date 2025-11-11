@@ -6,6 +6,7 @@ import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from "react-native-reanimated";
+import Toast from "react-native-toast-message";
 import "../global.css";
 import { ReactQueryProvider } from "../providers/ReactQueryProvider";
 
@@ -36,6 +37,7 @@ export default function RootLayout() {
           </Stack>
         </HeroUINativeProvider>
       </ReactQueryProvider>
+      <Toast />
     </GestureHandlerRootView>
   );
 }
