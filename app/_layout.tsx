@@ -1,5 +1,8 @@
+import { supabase } from "@/lib/supabase";
 import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import {
@@ -20,15 +23,61 @@ if (__DEV__) {
 }
 
 export default function RootLayout() {
-  // TODO: Adicionar lógica de autenticação aqui
-  // Por enquanto, sempre mostra (protected)
-  const isAuthenticated = false; // Placeholder
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Verificar sessão inicial
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setIsAuthenticated(!!session);
+      setIsLoading(false);
+    };
+
+    checkSession();
+
+    // Listener para mudanças de autenticação
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      setIsLoading(false);
+    });
+
+    // Cleanup do listener
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#000000",
+        }}
+      >
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ReactQueryProvider>
         <HeroUINativeProvider>
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "#000000" },
+            }}
+          >
             {isAuthenticated ? (
               <Stack.Screen name="(protected)" />
             ) : (

@@ -25,7 +25,7 @@ export const authService = {
    * @param data - Dados do cadastro (email, senha e nome opcional)
    * @returns Promise com o resultado do cadastro
    */
-  async signUp(data: SignUpData) {
+  signUp: async (data: SignUpData) => {
     try {
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -76,10 +76,7 @@ export const authService = {
         session: authData.session,
       };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || "Erro ao fazer login",
-      };
+      throw error;
     }
   },
 

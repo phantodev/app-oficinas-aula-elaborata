@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Button, TextField } from "heroui-native";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text, View } from "react-native";
@@ -30,6 +30,8 @@ const cadastroSchema = z
 type CadastroFormData = z.infer<typeof cadastroSchema>;
 
 export default function CadastroScreen() {
+  const router = useRouter();
+
   const {
     control,
     handleSubmit,
@@ -58,6 +60,7 @@ export default function CadastroScreen() {
           text1: "Cadastro",
           text2: "Cadastro realizado com sucesso",
         });
+        router.replace("/(auth)/login");
       }
     },
     onError: (error: any) => {
