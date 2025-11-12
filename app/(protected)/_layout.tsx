@@ -7,6 +7,7 @@ export default function ProtectedLayout() {
     <Drawer
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
+        drawerContentContainerStyle: { backgroundColor: "#1a1a1a" },
         drawerStyle: {
           backgroundColor: "#1a1a1a",
           width: 280,
