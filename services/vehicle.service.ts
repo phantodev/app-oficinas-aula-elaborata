@@ -19,6 +19,9 @@ export interface VehicleData {
   cor?: string;
   cliente_id: string;
   cliente?: ClienteData;
+  outraPessoaEntregando?: boolean;
+  nomeResponsavel?: string;
+  telefoneResponsavel?: string;
 }
 
 /**

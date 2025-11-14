@@ -7,7 +7,7 @@ export default function CheckInLayout() {
         headerShown: false,
         contentStyle: { backgroundColor: "#292524" },
         presentation: "modal",
-        animation: "fade",
+        animation: "slide_from_right",
         animationTypeForReplace: "push",
       }}
     >

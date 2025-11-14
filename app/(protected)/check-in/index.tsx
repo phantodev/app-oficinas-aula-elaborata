@@ -1,4 +1,6 @@
+import { useMainStore } from "@/store/useMain.store";
 import Feather from "@expo/vector-icons/Feather";
+import { RelativePathString, useRouter } from "expo-router";
 import { Button, Switch, TextField } from "heroui-native";
 import { useState } from "react";
 import {
@@ -10,11 +12,14 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import {
+  VehicleData,
   vehicleService,
   type ClienteData,
 } from "../../../services/vehicle.service";
 
 export default function CheckInIndex() {
+  const router = useRouter();
+  const { vehicleData, setVehicleData } = useMainStore();
   const [placa, setPlaca] = useState("");
   const [clienteEncontrado, setClienteEncontrado] =
     useState<ClienteData | null>(null);
@@ -22,6 +27,7 @@ export default function CheckInIndex() {
   const [outraPessoaEntregando, setOutraPessoaEntregando] = useState(false);
   const [nomeResponsavel, setNomeResponsavel] = useState("");
   const [telefoneResponsavel, setTelefoneResponsavel] = useState("");
+  const [openModalRegister, setOpenModalRegister] = useState(false);
 
   // Função para converter texto para maiúsculo
   const handlePlacaChange = (text: string) => {
@@ -54,13 +60,21 @@ export default function CheckInIndex() {
           text1: "Veículo encontrado",
           text2: "Dados do cliente carregados com sucesso",
         });
+
+        const vehicleData: VehicleData = {
+          id: result.vehicle.id,
+          placa: result.vehicle.placa,
+          marca: result.vehicle.marca,
+          modelo: result.vehicle.modelo,
+          ano: result.vehicle.ano,
+          cor: result.vehicle.cor,
+          cliente_id: result.vehicle.cliente_id,
+          cliente: result.vehicle.cliente,
+        };
+
+        setVehicleData(vehicleData);
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Veículo não encontrado",
-          text2: result.error || "Nenhum veículo encontrado com esta placa",
-        });
-        setClienteEncontrado(null);
+        setOpenModalRegister(true);
       }
     } catch (error: any) {
       Toast.show({
@@ -72,6 +86,25 @@ export default function CheckInIndex() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNextStep = () => {
+    if (!vehicleData) {
+      Toast.show({
+        type: "error",
+        text1: "Veículo não encontrado",
+        text2: "Nenhum veículo encontrado para atualizar",
+      });
+      return;
+    }
+    const vehicleDataToUpdate: VehicleData = {
+      ...vehicleData,
+      outraPessoaEntregando: outraPessoaEntregando,
+      nomeResponsavel: nomeResponsavel,
+      telefoneResponsavel: telefoneResponsavel,
+    };
+    setVehicleData(vehicleDataToUpdate);
+    router.push("/check-in/check-in-step-2" as RelativePathString);
   };
 
   return (
@@ -222,13 +255,7 @@ export default function CheckInIndex() {
         {/* Botão Avançar */}
         {clienteEncontrado && (
           <View className="mt-6">
-            <Button
-              onPress={() => {
-                // TODO: Implementar navegação para próximo passo
-                console.log("Avançar para próximo passo");
-              }}
-              className="w-full"
-            >
+            <Button onPress={handleNextStep} className="w-full">
               Avançar
             </Button>
           </View>

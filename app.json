@@ -23,6 +23,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.kduburko.appoficinas",
       "softwareKeyboardLayoutMode": "pan",
+      "permissions": ["CAMERA", "RECORD_AUDIO"],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -52,6 +53,14 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
         }
       ],
       "expo-secure-store"
