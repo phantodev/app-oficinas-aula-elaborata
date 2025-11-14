@@ -5,7 +5,7 @@ import {
   useCameraPermissions,
   useMicrophonePermissions,
 } from "expo-camera";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -38,6 +38,20 @@ export function CameraModal({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingStarted, setRecordingStarted] = useState(false);
   const cameraRef = useRef<CameraView>(null);
+  const recordingPromiseRef = useRef<Promise<
+    { uri: string } | undefined
+  > | null>(null);
+  const recordingStartTimeRef = useRef<number | null>(null);
+
+  // Limpa os refs quando o modal fecha
+  useEffect(() => {
+    if (!visible) {
+      recordingPromiseRef.current = null;
+      recordingStartTimeRef.current = null;
+      setIsRecording(false);
+      setRecordingStarted(false);
+    }
+  }, [visible]);
 
   const handleRequestPermission = useCallback(async () => {
     try {
@@ -111,38 +125,122 @@ export function CameraModal({
 
     try {
       setIsRecording(true);
+      setRecordingStarted(true);
+      const startTime = Date.now();
+      recordingStartTimeRef.current = startTime;
+      console.log("Start recording - timestamp setado:", startTime);
 
-      const promise = cameraRef.current.recordAsync({
-        maxDuration: 60, // 60 segundos máximo
+      // Inicia a gravação e armazena a Promise
+      // Adiciona opções para garantir que a gravação funcione corretamente
+      recordingPromiseRef.current = cameraRef.current.recordAsync({
+        maxDuration: 60,
       });
+      console.log("Start recording - Promise criada");
 
-      const video = await promise;
-
-      if (video && onVideoRecorded) {
-        onVideoRecorded(video.uri);
-      }
-      setIsRecording(false);
-      setRecordingStarted(false);
-      onClose();
+      // Aguarda um delay maior para garantir que a gravação realmente iniciou no nível nativo
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Start recording - delay concluído, gravação iniciada");
     } catch (error: any) {
+      console.error("Erro ao iniciar gravação:", error);
       Toast.show({
         type: "error",
-        text1: "Erro ao gravar vídeo",
-        text2: "Não foi possível gravar o vídeo.",
+        text1: "Erro ao iniciar gravação",
+        text2: "Não foi possível iniciar a gravação do vídeo.",
       });
       setIsRecording(false);
+      setRecordingStarted(false);
+      recordingStartTimeRef.current = null;
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (!cameraRef.current || !isRecording) return;
 
+    // Debug: verifica o estado do recordingStartTimeRef
+    const recordingDuration = recordingStartTimeRef.current
+      ? Date.now() - recordingStartTimeRef.current
+      : 0;
+
+    console.log(
+      "Stop recording - recordingStartTimeRef:",
+      recordingStartTimeRef.current
+    );
+    console.log("Stop recording - isRecording:", isRecording);
+    console.log("Stop recording - duração (ms):", recordingDuration);
+
+    // Verifica se a gravação teve tempo suficiente (pelo menos 1 segundo)
+    if (recordingDuration < 1000) {
+      Toast.show({
+        type: "error",
+        text1: "Gravação muito curta",
+        text2: `Aguarde pelo menos 1 segundo. Duração atual: ${Math.round(
+          recordingDuration / 1000
+        )}s`,
+      });
+      return;
+    }
+
     try {
+      // Adiciona um pequeno delay antes de parar para garantir que tudo está sincronizado
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Para a gravação
       cameraRef.current.stopRecording();
-      // O estado será atualizado quando a Promise do recordAsync for resolvida/rejeitada
-    } catch (error) {
+
+      // Aguarda a Promise do recordAsync ser resolvida
+      if (recordingPromiseRef.current) {
+        try {
+          const video = await recordingPromiseRef.current;
+
+          if (video && video.uri && onVideoRecorded) {
+            onVideoRecorded(video.uri);
+            onClose();
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Vídeo não disponível",
+              text2: "Não foi possível obter o vídeo gravado.",
+            });
+          }
+        } catch (error: any) {
+          console.error("Erro ao finalizar gravação:", error);
+
+          // Ignora o erro específico de gravação muito curta
+          if (error?.message?.includes("stopped before any data")) {
+            Toast.show({
+              type: "error",
+              text1: "Gravação muito curta",
+              text2: "Grave por pelo menos 1 segundo.",
+            });
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Erro ao gravar vídeo",
+              text2: error?.message || "Não foi possível gravar o vídeo.",
+            });
+          }
+        } finally {
+          recordingPromiseRef.current = null;
+          recordingStartTimeRef.current = null;
+          setIsRecording(false);
+          setRecordingStarted(false);
+        }
+      } else {
+        setIsRecording(false);
+        setRecordingStarted(false);
+        recordingStartTimeRef.current = null;
+      }
+    } catch (error: any) {
       console.error("Erro ao parar gravação:", error);
+      Toast.show({
+        type: "error",
+        text1: "Erro ao parar gravação",
+        text2: "Não foi possível parar a gravação.",
+      });
       setIsRecording(false);
+      setRecordingStarted(false);
+      recordingPromiseRef.current = null;
+      recordingStartTimeRef.current = null;
     }
   };
 
@@ -213,7 +311,12 @@ export function CameraModal({
       onRequestClose={onClose}
     >
       <View style={styles.cameraContainer}>
-        <CameraView ref={cameraRef} style={styles.camera} facing={facing} />
+        <CameraView
+          mode="video"
+          ref={cameraRef}
+          style={styles.camera}
+          facing={facing}
+        />
 
         {/* Header com botão de fechar */}
         <View style={styles.header}>
