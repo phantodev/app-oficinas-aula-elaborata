@@ -2,18 +2,13 @@ import { CameraModal } from "@/components/camera-modal";
 import { ImageModal } from "@/components/image-modal";
 import { VideoModal } from "@/components/video-modal";
 import { VideoPreview } from "@/components/video-preview";
-import { useMainStore } from "@/store/useMain.store";
+import { MediaItem, useMainStore } from "@/store/useMain.store";
 import Feather from "@expo/vector-icons/Feather";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { RelativePathString, useRouter } from "expo-router";
 import { Button } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-
-interface MediaItem {
-  uri: string;
-  type: "image" | "video";
-}
 
 export default function CheckIn2Page() {
   const router = useRouter();
@@ -25,7 +20,7 @@ export default function CheckIn2Page() {
     "image" | "video" | null
   >(null);
 
-  const { vehicleData } = useMainStore();
+  const { vehicleData, setCheckInMediaList } = useMainStore();
 
   // Calcula a largura de cada item: (largura do container - gaps) / 3
   // gap-4 = 16px, com 3 itens temos 2 gaps = 32px
@@ -141,7 +136,11 @@ export default function CheckIn2Page() {
       <Button
         className="w-full mt-4"
         isDisabled={mediaList.length === 0}
-        onPress={() => console.log("vehicleData", vehicleData)}
+        onPress={() => {
+          setCheckInMediaList(mediaList);
+          console.log("Mídias salvas no store:", mediaList);
+          router.push("/check-in/check-in-step-3" as RelativePathString);
+        }}
       >
         Próximo
       </Button>
