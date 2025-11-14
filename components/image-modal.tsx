@@ -16,7 +16,7 @@ export function ImageModal({ visible, imageUri, onClose }: ImageModalProps) {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/90 justify-center items-center">
+      <View className="flex-1 bg-black">
         <TouchableOpacity
           className="absolute top-12 right-5 z-10 w-11 h-11 rounded-full bg-black/50 justify-center items-center"
           onPress={onClose}

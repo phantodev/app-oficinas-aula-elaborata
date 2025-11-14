@@ -1,5 +1,7 @@
 import Feather from "@expo/vector-icons/Feather";
 import {
+  CameraMode,
+  CameraRatio,
   CameraType,
   CameraView,
   useCameraPermissions,
@@ -37,6 +39,12 @@ export function CameraModal({
   const [facing, setFacing] = useState<CameraType>("back");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingStarted, setRecordingStarted] = useState(false);
+  const [cameraMode, setCameraMode] = useState<CameraMode>("picture");
+  // CameraRatio aceita valores como "4:3", "16:9", etc.
+  // Para 9:16 (portrait), podemos usar undefined ou tentar outro valor
+  const [pictureRatio, setPictureRatio] = useState<CameraRatio | undefined>(
+    undefined
+  );
   const cameraRef = useRef<CameraView>(null);
   const recordingPromiseRef = useRef<Promise<
     { uri: string } | undefined
@@ -50,6 +58,7 @@ export function CameraModal({
       recordingStartTimeRef.current = null;
       setIsRecording(false);
       setRecordingStarted(false);
+      setCameraMode("picture");
     }
   }, [visible]);
 
@@ -124,6 +133,12 @@ export function CameraModal({
     }
 
     try {
+      // Muda o modo da câmera para "video" antes de iniciar a gravação
+      setCameraMode("video");
+
+      // Aguarda um pequeno delay para o modo mudar
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       setIsRecording(true);
       setRecordingStarted(true);
       const startTime = Date.now();
@@ -224,11 +239,15 @@ export function CameraModal({
           recordingStartTimeRef.current = null;
           setIsRecording(false);
           setRecordingStarted(false);
+          // Volta o modo para "picture" após parar a gravação
+          setCameraMode("picture");
         }
       } else {
         setIsRecording(false);
         setRecordingStarted(false);
         recordingStartTimeRef.current = null;
+        // Volta o modo para "picture" após parar a gravação
+        setCameraMode("picture");
       }
     } catch (error: any) {
       console.error("Erro ao parar gravação:", error);
@@ -241,6 +260,8 @@ export function CameraModal({
       setRecordingStarted(false);
       recordingPromiseRef.current = null;
       recordingStartTimeRef.current = null;
+      // Volta o modo para "picture" em caso de erro
+      setCameraMode("picture");
     }
   };
 
@@ -312,10 +333,12 @@ export function CameraModal({
     >
       <View style={styles.cameraContainer}>
         <CameraView
-          mode="video"
+          key={cameraMode}
+          mode={cameraMode}
           ref={cameraRef}
           style={styles.camera}
           facing={facing}
+          ratio={pictureRatio}
         />
 
         {/* Header com botão de fechar */}
